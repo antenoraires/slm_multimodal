@@ -20,10 +20,10 @@ load_dotenv()
 token = os.getenv("HUG_KEY")
 login(token=token)
 
-#lista de Arquivos
+# lista de Arquivos
 sources = [
     "https://www.pwc.com/jm/en/research-publications/pdf/basic-understanding-of-a-companys-financials.pdf"
-    ]
+]
 
 embeddings_model_path = "Snowflake/snowflake-arctic-embed-m"
 embeddings_model = HuggingFaceEmbeddings(
@@ -32,7 +32,7 @@ embeddings_model = HuggingFaceEmbeddings(
 embeddings_tokenizer = AutoTokenizer.from_pretrained(embeddings_model_path)
 
 # carrehga o modelo de embeddings
-model_id = "llava-hf/llava-1.5-7b-hf"  
+model_id = "llava-hf/llava-1.5-7b-hf"
 # Carrega processador (lida com imagem + texto)
 tokenizer = AutoProcessor.from_pretrained(model_id)
 
@@ -43,9 +43,9 @@ conversions = process.conversions(sources)
 
 texts = process.chunks_text(conversions, embeddings_tokenizer)
 tables = process.chuck_tables(conversions, embeddings_tokenizer)
-pictures = process.chuck_pictures(conversions, 
-                                  model, tokenizer, 
-                                  embeddings_tokenizer)
+pictures = process.chuck_pictures(
+    conversions, model, tokenizer, embeddings_tokenizer
+)
 
 vector_db = control.vector_db_setup(embeddings_model)
 

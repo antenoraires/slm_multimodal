@@ -11,12 +11,15 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 
 # Initialize a Milvus vector database to store document embeddings.
 
+
 def vector_db_setup(embeddings_model):
     """
     Set up a temporary file to store the vector database and initialize the Milvus vector database.
     """
     # Create a temporary file for the vector database.
-    db_file = tempfile.NamedTemporaryFile(prefix="vectorstore_", suffix=".db", delete=False).name
+    db_file = tempfile.NamedTemporaryFile(
+        prefix="vectorstore_", suffix=".db", delete=False
+    ).name
     print(f"The vector database will be saved to {db_file}")
 
     vector_db: VectorStore = Milvus(
@@ -35,24 +38,30 @@ def rag_chain_setup(model, tokenizer, vector_db):
     """
     # Create a prompt for question-answering with the retrieved context
     prompt = tokenizer.apply_chat_template(
-        conversation=[{
-            "role": "user",
-            "content": "{input}",
-        }],
-        documents=[{
-            "title": "placeholder",
-            "text": "{context}",
-        }],
+        conversation=[
+            {
+                "role": "user",
+                "content": "{input}",
+            }
+        ],
+        documents=[
+            {
+                "title": "placeholder",
+                "text": "{context}",
+            }
+        ],
         add_generation_prompt=True,
         tokenize=False,
     )
     prompt_template = PromptTemplate.from_template(template=prompt)
 
     # Create a document prompt template to wrap each retrieved document
-    document_prompt_template = PromptTemplate.from_template(template="""\
+    document_prompt_template = PromptTemplate.from_template(
+        template="""\
     Document {doc_id}
-    {page_content}""")
-    document_separator="\n\n"
+    {page_content}"""
+    )
+    document_separator = "\n\n"
 
     # Assemble the retrieval-augmented generation chain
     # Modify the document_variable_name to match your prompt
@@ -61,7 +70,7 @@ def rag_chain_setup(model, tokenizer, vector_db):
         prompt=prompt_template,
         document_prompt=document_prompt_template,
         document_separator=document_separator,
-        document_variable_name='input',  # This won't work as expected without prompt modification
+        document_variable_name="input",  # This won't work as expected without prompt modification
     )
     # Instead, adjust the prompt as shown earlier
 
@@ -82,7 +91,8 @@ def rag_chain_setup(model, tokenizer, vector_db):
     )
     return rag_chain
 
+
 def retrivier_questions(rag_chain):
     query = input("Digite sua pergunta: ")
     outputs = rag_chain.invoke({"input": query})
-    display(Markdown(outputs['answer']))
+    display(Markdown(outputs["answer"]))

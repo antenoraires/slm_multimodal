@@ -21,30 +21,40 @@ import PIL.ImageOps
 
 def conversions(sources):
     pdf_pipeline_options = PdfPipelineOptions(
-    do_ocr=False,
-    generate_picture_images=True,
+        do_ocr=False,
+        generate_picture_images=True,
     )
-    format_options = { InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_pipeline_options) }
+    format_options = {
+        InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_pipeline_options)
+    }
     converter = DocumentConverter(format_options=format_options)
     # Define the sources (URLs) of the documents to be converted.
     # "https://arxiv.org/pdf/1706.03762"
     # Convert the PDF documents from the sources into an internal document format.
-    conversions = { source: converter.convert(source=source).document for source in sources }
+    conversions = {
+        source: converter.convert(source=source).document for source in sources
+    }
 
     return conversions
+
 
 # Process the converted documents by splitting them into text chunks.
 def chunks_text(conversions, embeddings_tokenizer):
     doc_id = 0
     texts: list[Document] = []
     for source, docling_document in conversions.items():
-    # Use a hybrid chunker that leverages the tokenizer to split the document.
-        for chunk in tqdm(HybridChunker(tokenizer=embeddings_tokenizer).chunk(docling_document), desc="Processando tabelas"):
+        # Use a hybrid chunker that leverages the tokenizer to split the document.
+        for chunk in tqdm(
+            HybridChunker(tokenizer=embeddings_tokenizer).chunk(
+                docling_document
+            ),
+            desc="Processando tabelas",
+        ):
             start_time = time.time()  # Marca o tempo de início da iteração
             items = chunk.meta.doc_items
             # Skip chunks that only consist of tables; those will be processed separately.
             if len(items) == 1 and isinstance(items[0], TableItem):
-                continue # we will process tables later
+                continue  # we will process tables later
             # Combine references from document items.
             refs = " ".join(map(lambda item: item.get_ref().cref, items))
             print(refs)
@@ -52,7 +62,7 @@ def chunks_text(conversions, embeddings_tokenizer):
             document = Document(
                 page_content=text,
                 metadata={
-                    "doc_id": (doc_id:=doc_id+1),
+                    "doc_id": (doc_id := doc_id + 1),
                     "source": source,
                     "ref": refs,
                 },
@@ -63,6 +73,7 @@ def chunks_text(conversions, embeddings_tokenizer):
     return texts
     # Print the number of text documents created.
     print(f"{len(texts)} text documents created")
+
 
 def chuck_tables(conversions, embeddings_tokenizer):
     doc_id = len(chunks_text(conversions, embeddings_tokenizer))
@@ -77,9 +88,9 @@ def chuck_tables(conversions, embeddings_tokenizer):
                 document = Document(
                     page_content=text,
                     metadata={
-                        "doc_id": (doc_id:=doc_id+1),
+                        "doc_id": (doc_id := doc_id + 1),
                         "source": source,
-                        "ref": ref
+                        "ref": ref,
                     },
                 )
             tables.append(document)
@@ -104,6 +115,7 @@ def encode_image(image: PIL.Image.Image, format: str = "png") -> str:
     uri = f"data:image/{format};base64,{encoding}"
     return uri
 
+
 def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
     for source, docling_document in conversions.items():
         # Set up a prompt template for processing images.
@@ -124,12 +136,17 @@ def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
             add_generation_prompt=True,
         )
         # Convert vision_prompt to a string if it is a list of integers
-        vision_prompt = tokenizer.decode(vision_prompt) if isinstance(vision_prompt, list) else vision_prompt
+        vision_prompt = (
+            tokenizer.decode(vision_prompt)
+            if isinstance(vision_prompt, list)
+            else vision_prompt
+        )
 
         # Process the pictures embedded in the documents.
         pictures: list[Document] = []
-        doc_id = (len(chunks_text(conversions, embeddings_tokenizer)) 
-        + len(chuck_tables(conversions, embeddings_tokenizer)))
+        doc_id = len(chunks_text(conversions, embeddings_tokenizer)) + len(
+            chuck_tables(conversions, embeddings_tokenizer)
+        )
         for picture in docling_document.pictures:
             start_time = time.time()
             ref = picture.get_ref().cref
@@ -145,7 +162,7 @@ def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
                 document = Document(
                     page_content=text,
                     metadata={
-                        "doc_id": (doc_id:=doc_id+1),
+                        "doc_id": (doc_id := doc_id + 1),
                         "source": source,
                         "ref": ref,
                     },

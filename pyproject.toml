@@ -15,6 +15,25 @@ langchain-milvus = "*"
 langchain-ollama = "*"
 docling = "^2.30.0"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.5"
+
+[tool.ruff]
+# Ativa regras básicas (equivalente ao `ruff check`)
+select = [
+    "E",   # Erros PEP 8 (pycodestyle)
+    "F",   # Erros de sintaxe (pyflakes)
+    "W",   # Avisos PEP 8
+    "I",   # Ordem de imports (isort)
+    "UP",  # Moderniza código (ex: `Union[str, int]` → `str | int`)
+    "PL",  # Regras de design (pylint)
+    "RUF", # Regras específicas do Ruff
+]
+
+# Configurações adicionais
+line-length = 79  # Define o comprimento máximo da linha
+target-version = "py312"  # Versão do Python usada
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
