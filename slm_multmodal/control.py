@@ -2,6 +2,7 @@
 import tempfile
 from langchain_core.vectorstores import VectorStore
 from langchain_milvus import Milvus
+from IPython.display import Markdown, display
 
 # Import modules for creating a retrieval augmented generation (RAG) chain using LangChain.
 from langchain.prompts import PromptTemplate
@@ -80,3 +81,8 @@ def rag_chain_setup(model, tokenizer, vector_db):
         combine_docs_chain=combine_docs_chain,
     )
     return rag_chain
+
+def retrivier_questions(rag_chain):
+    query = input("Digite sua pergunta: ")
+    outputs = rag_chain.invoke({"input": query})
+    display(Markdown(outputs['answer']))

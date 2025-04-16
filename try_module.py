@@ -56,3 +56,6 @@ ids = vector_db.add_documents(documents)
 print(f"{len(ids)} documents added to the vector database")
 
 rag_chain = control.rag_chain_setup(model, tokenizer, vector_db)
+
+# Define the input query
+control.retrivier_questions(rag_chain=rag_chain)
