@@ -1,17 +1,13 @@
-from slm_multmodal import control
-from slm_multmodal import process
 import itertools
-
-from langchain_huggingface import HuggingFaceEmbeddings
-from transformers import AutoProcessor, AutoModelForVision2Seq, AutoTokenizer
-
-
-from dotenv import load_dotenv
+import logging
 import os
 
-import logging
+from dotenv import load_dotenv
 from huggingface_hub import login
+from langchain_huggingface import HuggingFaceEmbeddings
+from transformers import AutoModelForVision2Seq, AutoProcessor, AutoTokenizer
 
+from slm_multmodal import control, process
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,10 +16,9 @@ load_dotenv()
 token = os.getenv("HUG_KEY")
 login(token=token)
 
+config = control.config()
 # lista de Arquivos
-sources = [
-    "https://www.pwc.com/jm/en/research-publications/pdf/basic-understanding-of-a-companys-financials.pdf"
-]
+sources = config["sources"]
 
 embeddings_model_path = "Snowflake/snowflake-arctic-embed-m"
 embeddings_model = HuggingFaceEmbeddings(
@@ -49,7 +44,6 @@ pictures = process.chuck_pictures(
 
 vector_db = control.vector_db_setup(embeddings_model)
 
-# Combine all document types (text chunks, tables, and picture descriptions) into one list.
 documents = list(itertools.chain(texts, tables, pictures))
 # Add documents to the vector database and capture their assigned IDs.
 ids = vector_db.add_documents(documents)

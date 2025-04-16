@@ -1,21 +1,20 @@
-# Set up a temporary file to store the vector database.
 import tempfile
+import yaml
+
+
+from IPython.display import Markdown, display
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain.prompts import PromptTemplate
 from langchain_core.vectorstores import VectorStore
 from langchain_milvus import Milvus
-from IPython.display import Markdown, display
 
-# Import modules for creating a retrieval augmented generation (RAG) chain using LangChain.
-from langchain.prompts import PromptTemplate
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-
-# Initialize a Milvus vector database to store document embeddings.
-
+def config():
+    with open('src/config.yaml') as f:
+        config = yaml.safe_load(f)
+        return config
 
 def vector_db_setup(embeddings_model):
-    """
-    Set up a temporary file to store the vector database and initialize the Milvus vector database.
-    """
     # Create a temporary file for the vector database.
     db_file = tempfile.NamedTemporaryFile(
         prefix="vectorstore_", suffix=".db", delete=False
@@ -70,7 +69,7 @@ def rag_chain_setup(model, tokenizer, vector_db):
         prompt=prompt_template,
         document_prompt=document_prompt_template,
         document_separator=document_separator,
-        document_variable_name="input",  # This won't work as expected without prompt modification
+        document_variable_name="input",
     )
     # Instead, adjust the prompt as shown earlier
 

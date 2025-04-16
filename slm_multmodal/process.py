@@ -1,22 +1,19 @@
 # Extraind9o informaçoes dos documentos
-from docling.document_converter import DocumentConverter, PdfFormatOption
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import PdfPipelineOptions
-
-from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
-from docling_core.types.doc.document import TableItem
-
-from docling_core.types.doc.labels import DocItemLabel
-from langchain_core.documents import Document
-
-import time
-from tqdm import tqdm
-
 # Import modules to handle image encoding.
 import base64
 import io
+import time
+
 import PIL.Image
 import PIL.ImageOps
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
+from docling_core.types.doc.document import TableItem
+from docling_core.types.doc.labels import DocItemLabel
+from langchain_core.documents import Document
+from tqdm import tqdm
 
 
 def conversions(sources):
@@ -52,7 +49,6 @@ def chunks_text(conversions, embeddings_tokenizer):
         ):
             start_time = time.time()  # Marca o tempo de início da iteração
             items = chunk.meta.doc_items
-            # Skip chunks that only consist of tables; those will be processed separately.
             if len(items) == 1 and isinstance(items[0], TableItem):
                 continue  # we will process tables later
             # Combine references from document items.
@@ -120,7 +116,8 @@ def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
     for source, docling_document in conversions.items():
         # Set up a prompt template for processing images.
         # Feel free to experiment with this prompt
-        image_prompt = "If the image contains text, explain the text in the image. The image is: {}"
+        image_prompt = ("If the image contains text,"
+                        " explain the text in the image. The image is: {}")
         conversation = [
             {
                 "role": "user",
@@ -157,7 +154,6 @@ def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
                 # Modify the prompt to include the encoded image
                 # Insert the encoded image into the prompt.
                 prompt_with_image = vision_prompt.format(encoded_image)
-                # Invoke the vision model to generate a description from the image.
                 text = vision_model.invoke(prompt_with_image)
                 document = Document(
                     page_content=text,
