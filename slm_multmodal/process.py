@@ -112,7 +112,7 @@ def encode_image(image: PIL.Image.Image, format: str = "png") -> str:
     return uri
 
 
-def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
+def chuck_pictures(conversions, model, tokenizer, embeddings_tokenizer):
     for source, docling_document in conversions.items():
         # Set up a prompt template for processing images.
         # Feel free to experiment with this prompt
@@ -154,7 +154,7 @@ def chuck_pictures(conversions, vision_model, tokenizer, embeddings_tokenizer):
                 # Modify the prompt to include the encoded image
                 # Insert the encoded image into the prompt.
                 prompt_with_image = vision_prompt.format(encoded_image)
-                text = vision_model.invoke(prompt_with_image)
+                text = model.invoke(prompt_with_image)
                 document = Document(
                     page_content=text,
                     metadata={
