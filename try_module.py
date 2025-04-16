@@ -2,7 +2,6 @@ from slm_multmodal import control
 from slm_multmodal import process
 import itertools
 
-from langchain_ollama import OllamaLLM
 from langchain_huggingface import HuggingFaceEmbeddings
 from transformers import AutoProcessor, AutoModelForVision2Seq, AutoTokenizer
 
@@ -16,12 +15,9 @@ from huggingface_hub import login
 
 logging.basicConfig(level=logging.INFO)
 
-# Carrega as variáveis do .env para o ambiente
+# Key Model
 load_dotenv()
-
-# Agora você pode acessar como se fosse uma variável de ambiente
 token = os.getenv("HUG_KEY")
-
 login(token=token)
 
 #lista de Arquivos
